@@ -2,6 +2,7 @@
 using Database_Test.Models;
 using Microsoft.EntityFrameworkCore;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Database_Test
@@ -12,6 +13,29 @@ namespace Database_Test
         {
             GrandChild grandchild = new GrandChild();
             Child child = new Child();
+            List<int> GrandchildrenFK = new List<int>();
+            if (parent.GrandChildren == null)
+            {
+                parent.GrandChildren = new List<GrandChild>();
+            }
+            foreach (var item in parent.GrandChildren)
+            {
+                if (context.GrandChildDatabase.Where(a => a.Id == item.Id).FirstOrDefault() == null)
+                {
+                    item.Id = 0;
+                    context.GrandChildDatabase.Add(item);
+                    context.SaveChanges();
+                    GrandchildrenFK.Add(item.Id);
+                }
+                else
+                {
+                    context.ChangeTracker.Clear();
+                    GrandchildrenFK.Add(item.Id);
+                    context.GrandChildDatabase.Update(item);
+                    context.SaveChanges();
+                }
+                parent.GrandChildren = new List<GrandChild>();
+            }
             if (parent.Child != null)
             {
                 if (parent.Child.GrandChild != null)
@@ -27,13 +51,16 @@ namespace Database_Test
                     else
                     {
                         grandchild = context.GrandChildDatabase.Where(a => a.Id == parent.Child.GrandChild.Id).FirstOrDefault();
+                        context.GrandChildDatabase.Update(grandchild);
+                        context.SaveChanges();
                     }
+                    parent.Child.GrandChild = null;
                 }
 
                 if (context.ChildDatabase.Where(a => a.Id == parent.Child.Id).FirstOrDefault() == null)
                 {
                     parent.Child.Id = 0;
-                    parent.Child.GrandChild = grandchild;
+                    parent.Child.GrandChildId = grandchild.Id;
                     context.ChildDatabase.Add(parent.Child);
                     context.SaveChanges();
                     child = context.ChildDatabase.OrderBy(a => a.Id).Last();
@@ -42,10 +69,11 @@ namespace Database_Test
                 else
                 {
                     child = context.ChildDatabase.Where(a => a.Id == parent.Child.Id).FirstOrDefault();
-                    child.GrandChild = grandchild;
-                    context.GrandChildDatabase.Update(grandchild);
+                    child.GrandChildId = grandchild.Id;
+                    context.ChildDatabase.Update(child);
                     context.SaveChanges();
                 }
+                parent.Child = null;
             }
 
 
@@ -55,7 +83,8 @@ namespace Database_Test
                 {
 
                     parent.Id = 0;
-                    parent.Child = child;
+                    parent.ChildId = child.Id;
+                    parent.GrandChildrenId = GrandchildrenFK;
                     context.ParentDatabase.Add(parent);
                     context.SaveChanges();
                 }
@@ -63,7 +92,9 @@ namespace Database_Test
                 {
                     var retrievedparent = context.ParentDatabase.Where(a => a.Id == parent.Id).FirstOrDefault();
                     retrievedparent.Child = child;
-                    context.ParentDatabase.Update(parent);
+                    retrievedparent.ChildId = child.Id;
+                    retrievedparent.GrandChildrenId = GrandchildrenFK;
+                    context.ParentDatabase.Update(retrievedparent);
                     context.SaveChanges();
                 }
             
@@ -115,6 +146,29 @@ namespace Database_Test
             if (context.ParentDatabase.Where(a => a.Id == id).FirstOrDefault() != null)
             {
                 var parent = context.ParentDatabase.Where(a => a.Id == id).FirstOrDefault();
+                List<GrandChild> grandchildren = new List<GrandChild>();
+                if (parent.GrandChildrenId != null)
+                {
+                    if (parent.GrandChildrenId.Count > 0)
+                    {
+                        foreach (var item in parent.GrandChildrenId)
+                        {
+                            if (context.GrandChildDatabase.Where(a => a.Id == item).FirstOrDefault() != null)
+                            {
+                                grandchildren.Add(context.GrandChildDatabase.Where(a => a.Id == item).FirstOrDefault());
+                            }
+                        }
+                        parent.GrandChildren = grandchildren;
+                    }
+                    else
+                    {
+                        parent.GrandChildren = new List<GrandChild>();
+                    }
+                }
+                else
+                {
+                    parent.GrandChildren = new List<GrandChild>();
+                }
                 if (context.ChildDatabase.Where(a => a.Id == parent.ChildId).FirstOrDefault() != null)
                 {
                     parent.Child = context.ChildDatabase.Where(a => a.Id == parent.ChildId).FirstOrDefault();
@@ -165,14 +219,14 @@ namespace Database_Test
                     }
                 },
                 GrandChildren = new System.Collections.Generic.List<GrandChild>()
-                { 
+                {
                     new GrandChild()
-                    { 
+                    {
                       Id = 1,
                       Text = "Grandchild1"
                     },
                     new GrandChild()
-                    { 
+                    {
                       Id = 2,
                       Text = "Grandchild2"
                     }
@@ -197,8 +251,10 @@ namespace Database_Test
                 }
             };
             //Add(parent, context);
-            Add(parent,context);
-            Console.WriteLine("");
+            Parent item = GetParent(10, context);
+            Console.WriteLine(item.Child.Text);
+            Console.WriteLine(item.Child.GrandChild.Text);
+            Console.WriteLine(item.GrandChildren.FirstOrDefault().Text);
         }
     }
 }

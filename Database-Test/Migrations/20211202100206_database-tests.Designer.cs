@@ -10,8 +10,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Database_Test.Migrations
 {
     [DbContext(typeof(TestDatabase))]
-    [Migration("20211201185639_database-test")]
-    partial class databasetest
+    [Migration("20211202100206_database-tests")]
+    partial class databasetests
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -48,7 +48,7 @@ namespace Database_Test.Migrations
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<int?>("GrandChildren")
+                    b.Property<int?>("GrandChildrenId")
                         .HasColumnType("int");
 
                     b.Property<string>("Text")
@@ -56,7 +56,7 @@ namespace Database_Test.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("GrandChildren");
+                    b.HasIndex("GrandChildrenId");
 
                     b.ToTable("GrandChildDatabase");
                 });
@@ -70,6 +70,9 @@ namespace Database_Test.Migrations
 
                     b.Property<int>("ChildId")
                         .HasColumnType("int");
+
+                    b.Property<string>("GrandChildrenId")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Text")
                         .HasColumnType("nvarchar(max)");
@@ -96,7 +99,7 @@ namespace Database_Test.Migrations
                 {
                     b.HasOne("Database_Test.Models.Parent", null)
                         .WithMany("GrandChildren")
-                        .HasForeignKey("GrandChildren");
+                        .HasForeignKey("GrandChildrenId");
                 });
 
             modelBuilder.Entity("Database_Test.Models.Parent", b =>

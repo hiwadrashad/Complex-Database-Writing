@@ -16,9 +16,8 @@ namespace Database_Test.Models
         public int ChildId { get; set; }
         [ForeignKey("ChildId")]
         public Child Child { get; set; }
-        [ForeignKey("GrandChildren")]
+        [ForeignKey("GrandChildrenId")]
         public List<GrandChild> GrandChildren { get; set; }
-        [NotMapped]
-        public List<int> GrandChildrenId { get; set; }
+        public string GrandChildrenId { get; set; }
     }
 }

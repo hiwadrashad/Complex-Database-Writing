@@ -2,7 +2,7 @@
 
 namespace Database_Test.Migrations
 {
-    public partial class databasetest : Migration
+    public partial class databasetests : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -13,7 +13,8 @@ namespace Database_Test.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Text = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    ChildId = table.Column<int>(type: "int", nullable: false)
+                    ChildId = table.Column<int>(type: "int", nullable: false),
+                    GrandChildrenId = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -27,14 +28,14 @@ namespace Database_Test.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Text = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    GrandChildren = table.Column<int>(type: "int", nullable: true)
+                    GrandChildrenId = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_GrandChildDatabase", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_GrandChildDatabase_ParentDatabase_GrandChildren",
-                        column: x => x.GrandChildren,
+                        name: "FK_GrandChildDatabase_ParentDatabase_GrandChildrenId",
+                        column: x => x.GrandChildrenId,
                         principalTable: "ParentDatabase",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
@@ -66,9 +67,9 @@ namespace Database_Test.Migrations
                 column: "GrandChildId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_GrandChildDatabase_GrandChildren",
+                name: "IX_GrandChildDatabase_GrandChildrenId",
                 table: "GrandChildDatabase",
-                column: "GrandChildren");
+                column: "GrandChildrenId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_ParentDatabase_ChildId",

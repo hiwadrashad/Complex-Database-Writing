@@ -79,26 +79,26 @@ namespace Database_Test
 
 
 
-                if (context.ParentDatabase.Where(a => a.Id == parent.Id).FirstOrDefault() == null)
-                {
+            if (context.ParentDatabase.Where(a => a.Id == parent.Id).FirstOrDefault() == null)
+            {
 
-                    parent.Id = 0;
-                    parent.ChildId = child.Id;
-                    parent.GrandChildrenId = GrandchildrenFK;
-                    context.ParentDatabase.Add(parent);
-                    context.SaveChanges();
-                }
-                else
-                {
-                    var retrievedparent = context.ParentDatabase.Where(a => a.Id == parent.Id).FirstOrDefault();
-                    retrievedparent.Child = child;
-                    retrievedparent.ChildId = child.Id;
-                    retrievedparent.GrandChildrenId = GrandchildrenFK;
-                    context.ParentDatabase.Update(retrievedparent);
-                    context.SaveChanges();
-                }
-            
-            
+                parent.Id = 0;
+                parent.ChildId = child.Id;
+                parent.GrandChildrenId = Converter.ListConverter.ListToString(GrandchildrenFK);
+                context.ParentDatabase.Add(parent);
+                context.SaveChanges();
+            }
+            else
+            {
+                var retrievedparent = context.ParentDatabase.Where(a => a.Id == parent.Id).FirstOrDefault();
+                retrievedparent.Child = child;
+                retrievedparent.ChildId = child.Id;
+                retrievedparent.GrandChildrenId = Converter.ListConverter.ListToString(GrandchildrenFK);
+                context.ParentDatabase.Update(retrievedparent);
+                context.SaveChanges();
+            }
+
+
 
 
         }
@@ -147,11 +147,12 @@ namespace Database_Test
             {
                 var parent = context.ParentDatabase.Where(a => a.Id == id).FirstOrDefault();
                 List<GrandChild> grandchildren = new List<GrandChild>();
-                if (parent.GrandChildrenId != null)
+                List<int> GrandChildrenIds = Converter.ListConverter.StringToList(parent.GrandChildrenId);
+                if (GrandChildrenIds != null)
                 {
-                    if (parent.GrandChildrenId.Count > 0)
+                    if (GrandChildrenIds.Count > 0)
                     {
-                        foreach (var item in parent.GrandChildrenId)
+                        foreach (var item in GrandChildrenIds)
                         {
                             if (context.GrandChildDatabase.Where(a => a.Id == item).FirstOrDefault() != null)
                             {
@@ -214,7 +215,7 @@ namespace Database_Test
                     Text = "hello from child",
                     GrandChild = new GrandChild()
                     {
-                        Id = 2,
+                        Id = 3,
                         Text = "hello from grandchild"
                     }
                 },
@@ -250,8 +251,14 @@ namespace Database_Test
                   }
                 }
             };
+
+            var intlist = new List<int>()
+            {
+                1,
+                2
+            };
             //Add(parent, context);
-            Parent item = GetParent(10, context);
+            Parent item = GetParent(2, context);
             Console.WriteLine(item.Child.Text);
             Console.WriteLine(item.Child.GrandChild.Text);
             Console.WriteLine(item.GrandChildren.FirstOrDefault().Text);

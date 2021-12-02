@@ -46,7 +46,7 @@ namespace Database_Test.Migrations
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<int?>("GrandChildren")
+                    b.Property<int?>("GrandChildrenId")
                         .HasColumnType("int");
 
                     b.Property<string>("Text")
@@ -54,7 +54,7 @@ namespace Database_Test.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("GrandChildren");
+                    b.HasIndex("GrandChildrenId");
 
                     b.ToTable("GrandChildDatabase");
                 });
@@ -68,6 +68,9 @@ namespace Database_Test.Migrations
 
                     b.Property<int>("ChildId")
                         .HasColumnType("int");
+
+                    b.Property<string>("GrandChildrenId")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Text")
                         .HasColumnType("nvarchar(max)");
@@ -94,7 +97,7 @@ namespace Database_Test.Migrations
                 {
                     b.HasOne("Database_Test.Models.Parent", null)
                         .WithMany("GrandChildren")
-                        .HasForeignKey("GrandChildren");
+                        .HasForeignKey("GrandChildrenId");
                 });
 
             modelBuilder.Entity("Database_Test.Models.Parent", b =>

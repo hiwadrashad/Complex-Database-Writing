@@ -136,8 +136,35 @@ namespace Database_Test
         {
             if (context.ParentDatabase.Where(a => a.Id == parent.Id).FirstOrDefault() != null)
             {
+                context.ChangeTracker.Clear();
                 context.Update(parent);
                 context.SaveChanges();
+            }
+            if (parent.Child != null)
+            {
+                context.Update(parent.Child);
+                context.SaveChanges();
+            }
+            if (parent.Child.GrandChild != null)
+            {
+                context.Update(parent.Child.GrandChild);
+                context.SaveChanges();
+            }
+            if (parent.GrandChildren != null)
+            {
+                if (parent.GrandChildren.Count > 0)
+                {
+                    List<int> GrandChildrenFK = new List<int>();
+                    foreach (var item in parent.GrandChildren)
+                    {
+                        GrandChildrenFK.Add(item.Id);
+                        context.Update(item);
+                        context.SaveChanges();
+                    }
+                    parent.GrandChildrenId = Converter.ListConverter.ListToString(GrandChildrenFK);
+                    context.Update(parent);
+                    context.SaveChanges();
+                }
             }
         }
 
@@ -234,6 +261,35 @@ namespace Database_Test
                 }
             };
 
+            var parenttoupdate = new Parent()
+            {
+                Id = 2,
+                Text = "hello from parent updated",
+                Child = new Child()
+                {
+                    Id = 1,
+                    Text = "hello from child updated",
+                    GrandChild = new GrandChild()
+                    {
+                        Id = 3,
+                        Text = "hello from grandchild updated"
+                    }
+                },
+                GrandChildren = new System.Collections.Generic.List<GrandChild>()
+                {
+                    new GrandChild()
+                    {
+                      Id = 1,
+                      Text = "Grandchild1 updated"
+                    },
+                    new GrandChild()
+                    {
+                      Id = 2,
+                      Text = "Grandchild2 updated"
+                    }
+                }
+            };
+
             var listparent = new Parent()
             {
                 Text = "hello from parent",
@@ -258,6 +314,7 @@ namespace Database_Test
                 2
             };
             //Add(parent, context);
+            UpdateParent(context, parenttoupdate);
             Parent item = GetParent(2, context);
             Console.WriteLine(item.Child.Text);
             Console.WriteLine(item.Child.GrandChild.Text);

@@ -10,8 +10,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Database_Test.Migrations
 {
     [DbContext(typeof(TestDatabase))]
-    [Migration("20211202100206_database-tests")]
-    partial class databasetests
+    [Migration("20211215173457_database-test")]
+    partial class databasetest
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -28,7 +28,7 @@ namespace Database_Test.Migrations
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<int>("GrandChildId")
+                    b.Property<int?>("GrandChildId")
                         .HasColumnType("int");
 
                     b.Property<string>("Text")
@@ -41,14 +41,14 @@ namespace Database_Test.Migrations
                     b.ToTable("ChildDatabase");
                 });
 
-            modelBuilder.Entity("Database_Test.Models.GrandChild", b =>
+            modelBuilder.Entity("Database_Test.Models.CloneParent", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<int?>("GrandChildrenId")
+                    b.Property<int?>("ChildId")
                         .HasColumnType("int");
 
                     b.Property<string>("Text")
@@ -56,7 +56,27 @@ namespace Database_Test.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("GrandChildrenId");
+                    b.HasIndex("ChildId");
+
+                    b.ToTable("CloneParentDatabase");
+                });
+
+            modelBuilder.Entity("Database_Test.Models.GrandChild", b =>
+                {
+                    b.Property<int?>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<int?>("ParentId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Text")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ParentId");
 
                     b.ToTable("GrandChildDatabase");
                 });
@@ -68,7 +88,7 @@ namespace Database_Test.Migrations
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<int>("ChildId")
+                    b.Property<int?>("ChildId")
                         .HasColumnType("int");
 
                     b.Property<string>("GrandChildrenId")
@@ -88,27 +108,32 @@ namespace Database_Test.Migrations
                 {
                     b.HasOne("Database_Test.Models.GrandChild", "GrandChild")
                         .WithMany()
-                        .HasForeignKey("GrandChildId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("GrandChildId");
 
                     b.Navigation("GrandChild");
+                });
+
+            modelBuilder.Entity("Database_Test.Models.CloneParent", b =>
+                {
+                    b.HasOne("Database_Test.Models.Child", "Child")
+                        .WithMany()
+                        .HasForeignKey("ChildId");
+
+                    b.Navigation("Child");
                 });
 
             modelBuilder.Entity("Database_Test.Models.GrandChild", b =>
                 {
                     b.HasOne("Database_Test.Models.Parent", null)
                         .WithMany("GrandChildren")
-                        .HasForeignKey("GrandChildrenId");
+                        .HasForeignKey("ParentId");
                 });
 
             modelBuilder.Entity("Database_Test.Models.Parent", b =>
                 {
                     b.HasOne("Database_Test.Models.Child", "Child")
                         .WithMany()
-                        .HasForeignKey("ChildId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("ChildId");
 
                     b.Navigation("Child");
                 });

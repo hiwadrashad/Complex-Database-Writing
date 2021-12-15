@@ -8,15 +8,14 @@ using System.Threading.Tasks;
 
 namespace Database_Test.Models
 {
-    public class Parent
+    public class CloneParent
     {
         //[KeyAttribute()]
         //[DatabaseGenerated(DatabaseGeneratedOption.None)]
         public int Id { get; set; }
         public string Text { get; set; }
         public int? ChildId { get; set; }
+        [ForeignKey("ChildId")]
         public Child Child { get; set; }
-        public List<GrandChild> GrandChildren { get; set; }
-        public string GrandChildrenId { get; set; }
     }
 }

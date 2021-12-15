@@ -10,10 +10,11 @@ namespace Database_Test.Models
 {
     public class Child
     {
-        [Key]
+        //[KeyAttribute()]
+        //[DatabaseGenerated(DatabaseGeneratedOption.None)]
         public int Id { get; set; }
         public string Text { get; set; }
-        public int GrandChildId { get; set; }
+        public int? GrandChildId { get; set; }
         [ForeignKey("GrandChildId")]
         public GrandChild GrandChild { get; set; }
     }

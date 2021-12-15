@@ -8,7 +8,7 @@ namespace Database_Test.Converter
 {
     public class ListConverter
     {
-        public static string ListToString(List<int> input)
+        public static string ListToString(List<int?> input)
         {
             return string.Join(',', input);
         }

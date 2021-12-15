@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Database_Test.ExtensionMethods;
 
 namespace Database_Test
 {
@@ -13,7 +14,7 @@ namespace Database_Test
         {
             GrandChild grandchild = new GrandChild();
             Child child = new Child();
-            List<int> GrandchildrenFK = new List<int>();
+            List<int?> GrandchildrenFK = new List<int?>();
             if (parent.GrandChildren == null)
             {
                 parent.GrandChildren = new List<GrandChild>();
@@ -154,7 +155,7 @@ namespace Database_Test
             {
                 if (parent.GrandChildren.Count > 0)
                 {
-                    List<int> GrandChildrenFK = new List<int>();
+                    List<int?> GrandChildrenFK = new List<int?>();
                     foreach (var item in parent.GrandChildren)
                     {
                         GrandChildrenFK.Add(item.Id);
@@ -225,14 +226,30 @@ namespace Database_Test
             context.Database.ExecuteSqlRaw("DELETE FROM [ChildDatabase]");
             context.Database.ExecuteSqlRaw("DELETE FROM [GrandChildDatabase]");
             context.Database.ExecuteSqlRaw("DELETE FROM [ParentDatabase]");
-            context.Database.ExecuteSqlRaw("DBCC CHECKIDENT('ChildDatabase',RESEED,0);");
-            context.Database.ExecuteSqlRaw("DBCC CHECKIDENT('GrandChildDatabase',RESEED,0);");
-            context.Database.ExecuteSqlRaw("DBCC CHECKIDENT('GrandChildDatabase',RESEED,0);");
+            context.Database.ExecuteSqlRaw("DELETE FROM [CloneParentDatabase]");
 
+        }
+
+        public static void CloneSimpleAdd(TestDatabase context, CloneParent parent)
+        {
+            context.ChildDatabase.Attach(parent.Child);
+            context.GrandChildDatabase.Attach(parent.Child.GrandChild);
+            parent.Child = null;
+            context.Add(parent);
+            context.SaveChanges();
+        }
+
+        public static CloneParent CloneSimpleGet(TestDatabase context, int id)
+        {
+            return context.CloneParentDatabase.Include(a => a.Child).ThenInclude(a => a.GrandChild).Where(a => a.Id == id).FirstOrDefault();
         }
         static void Main(string[] args)
         {
             TestDatabase context = new TestDatabase();
+            var simpleparent = new Parent()
+            {
+                Text = ""
+            };
             var parent = new Parent()
             {
                 Text = "hello from parent",
@@ -257,6 +274,21 @@ namespace Database_Test
                     {
                       Id = 2,
                       Text = "Grandchild2"
+                    }
+                }
+            };
+
+            var cloneparent = new CloneParent()
+            {
+                Text = "hello from parent",
+                Child = new Child()
+                {
+                    Id = 1,
+                    Text = "hello from child",
+                    GrandChild = new GrandChild()
+                    {
+                        Id = 3,
+                        Text = "hello from grandchild"
                     }
                 }
             };
@@ -313,12 +345,15 @@ namespace Database_Test
                 1,
                 2
             };
-            //Add(parent, context);
-            UpdateParent(context, parenttoupdate);
-            Parent item = GetParent(2, context);
-            Console.WriteLine(item.Child.Text);
-            Console.WriteLine(item.Child.GrandChild.Text);
-            Console.WriteLine(item.GrandChildren.FirstOrDefault().Text);
+            //CloneSimpleAdd(context, cloneparent);
+            //var returnobject = CloneSimpleGet(context,1);
+            foreach (var returnobject in context.CloneParentDatabase.Include(a => a.Child))
+            {
+                Console.WriteLine("parent : " + returnobject.Text);
+                Console.WriteLine("child : " + returnobject.Child.Text);
+                Console.WriteLine("grandchild : " + returnobject.Child.GrandChild.Text);
+            }
+
         }
     }
 }

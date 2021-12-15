@@ -13,6 +13,8 @@ namespace Database_Test.Database
         public DbSet<GrandChild> GrandChildDatabase { get; set; }
         public DbSet<Child> ChildDatabase { get; set; }
         public DbSet<Parent> ParentDatabase { get; set; }
+        public DbSet<CloneParent> CloneParentDatabase { get; set; }
+
         protected override void OnConfiguring(DbContextOptionsBuilder builder)
         {
             builder.UseSqlServer(@"Data Source=(localdb)\MSSQLLocalDB;Initial Catalog=Database-Test;Integrated Security=True;Connect Timeout=30;Encrypt=False;TrustServerCertificate=False;ApplicationIntent=ReadWrite;MultiSubnetFailover=False");
@@ -20,9 +22,8 @@ namespace Database_Test.Database
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-            modelBuilder.Entity<Parent>().HasOne(a => a.Child);
-            modelBuilder.Entity<Child>().HasOne(a => a.GrandChild);
-            modelBuilder.Entity<Parent>().HasMany(a => a.GrandChildren);
+            //modelBuilder.Entity<CloneParent>().HasOne(a => a.Child).WithMany().HasForeignKey(i => i.ChildId);
+            //modelBuilder.Entity<Child>().HasOne(a => a.GrandChild).WithMany().HasForeignKey(i => i.GrandChild);
         }
     }
 }

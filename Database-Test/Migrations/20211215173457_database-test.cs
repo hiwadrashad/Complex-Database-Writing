@@ -2,10 +2,24 @@
 
 namespace Database_Test.Migrations
 {
-    public partial class databasetests : Migration
+    public partial class databasetest : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.CreateTable(
+                name: "CloneParentDatabase",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Text = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ChildId = table.Column<int>(type: "int", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_CloneParentDatabase", x => x.Id);
+                });
+
             migrationBuilder.CreateTable(
                 name: "ParentDatabase",
                 columns: table => new
@@ -13,7 +27,7 @@ namespace Database_Test.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Text = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    ChildId = table.Column<int>(type: "int", nullable: false),
+                    ChildId = table.Column<int>(type: "int", nullable: true),
                     GrandChildrenId = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
@@ -28,14 +42,14 @@ namespace Database_Test.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Text = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    GrandChildrenId = table.Column<int>(type: "int", nullable: true)
+                    ParentId = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_GrandChildDatabase", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_GrandChildDatabase_ParentDatabase_GrandChildrenId",
-                        column: x => x.GrandChildrenId,
+                        name: "FK_GrandChildDatabase_ParentDatabase_ParentId",
+                        column: x => x.ParentId,
                         principalTable: "ParentDatabase",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
@@ -48,7 +62,7 @@ namespace Database_Test.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Text = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    GrandChildId = table.Column<int>(type: "int", nullable: false)
+                    GrandChildId = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -58,7 +72,7 @@ namespace Database_Test.Migrations
                         column: x => x.GrandChildId,
                         principalTable: "GrandChildDatabase",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateIndex(
@@ -67,9 +81,14 @@ namespace Database_Test.Migrations
                 column: "GrandChildId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_GrandChildDatabase_GrandChildrenId",
+                name: "IX_CloneParentDatabase_ChildId",
+                table: "CloneParentDatabase",
+                column: "ChildId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_GrandChildDatabase_ParentId",
                 table: "GrandChildDatabase",
-                column: "GrandChildrenId");
+                column: "ParentId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_ParentDatabase_ChildId",
@@ -77,12 +96,20 @@ namespace Database_Test.Migrations
                 column: "ChildId");
 
             migrationBuilder.AddForeignKey(
+                name: "FK_CloneParentDatabase_ChildDatabase_ChildId",
+                table: "CloneParentDatabase",
+                column: "ChildId",
+                principalTable: "ChildDatabase",
+                principalColumn: "Id",
+                onDelete: ReferentialAction.Restrict);
+
+            migrationBuilder.AddForeignKey(
                 name: "FK_ParentDatabase_ChildDatabase_ChildId",
                 table: "ParentDatabase",
                 column: "ChildId",
                 principalTable: "ChildDatabase",
                 principalColumn: "Id",
-                onDelete: ReferentialAction.Cascade);
+                onDelete: ReferentialAction.Restrict);
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
@@ -90,6 +117,9 @@ namespace Database_Test.Migrations
             migrationBuilder.DropForeignKey(
                 name: "FK_ChildDatabase_GrandChildDatabase_GrandChildId",
                 table: "ChildDatabase");
+
+            migrationBuilder.DropTable(
+                name: "CloneParentDatabase");
 
             migrationBuilder.DropTable(
                 name: "GrandChildDatabase");
